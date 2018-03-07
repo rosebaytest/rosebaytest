@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<!--
+
+
+-->
+    	<title>Titan Explorer</title>
+        <style>
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background: #95a5a6;
+
+  font-family: 'Helvetica Neue', Arial, Sans-Serif;
+}
+html .login-wrap {
+  position: relative;
+  margin: 0 auto;
+  background: #ecf0f1;
+  width: 350px;
+  border-radius: 5px;
+  box-shadow: 3px 3px 10px #333;
+  padding: 15px;
+}
+html .login-wrap h2 {
+  text-align: center;
+  font-weight: 200;
+  font-size: 2em;
+  margin-top: 10px;
+  color: #34495e;
+}
+html .login-wrap .form {
+  padding-top: 20px;
+}
+html .login-wrap .form input[type="text"],
+html .login-wrap .form input[type="password"],
+html .login-wrap .form button {
+  width: 80%;
+  margin-left: 10%;
+  margin-bottom: 25px;
+  height: 40px;
+  border-radius: 5px;
+  outline: 0;
+  -moz-outline-style: none;
+}
+html .login-wrap .form input[type="text"],
+html .login-wrap .form input[type="password"] {
+  border: 1px solid #bbb;
+  padding: 0 0 0 10px;
+  font-size: 14px;
+}
+html .login-wrap .form input[type="text"]:focus,
+html .login-wrap .form input[type="password"]:focus {
+  border: 1px solid #3498db;
+}
+html .login-wrap .form a {
+  text-align: center;
+  font-size: 10px;
+  color: #3498db;
+}
+html .login-wrap .form a p {
+  padding-bottom: 10px;
+}
+html .login-wrap .form button {
+  background: #e74c3c;
+  border: none;
+  color: white;
+  font-size: 18px;
+  font-weight: 200;
+  cursor: pointer;
+  transition: box-shadow .4s ease;
+}
+html .login-wrap .form button:hover {
+  box-shadow: 1px 1px 5px #555;
+}
+html .login-wrap .form button:active {
+  box-shadow: 1px 1px 7px #222;
+}
+html .login-wrap:after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: -webkit-linear-gradient(left, #27ae60 0%, #27ae60 20%, #8e44ad 20%, #8e44ad 40%, #3498db 40%, #3498db 60%, #e74c3c 60%, #e74c3c 80%, #f1c40f 80%, #f1c40f 100%);
+  background: -moz-linear-gradient(left, #27ae60 0%, #27ae60 20%, #8e44ad 20%, #8e44ad 40%, #3498db 40%, #3498db 60%, #e74c3c 60%, #e74c3c 80%, #f1c40f 80%, #f1c40f 100%);
+  height: 5px;
+  border-radius: 5px 5px 0 0;
+}
+
+
+        </style>
+    
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="css/fontAwesome.css">
+        <link rel="stylesheet" href="css/hero-slider.css">
+        <link rel="stylesheet" href="css/owl-carousel.css">
+        <link rel="stylesheet" href="css/datepicker.css">
+        <link rel="stylesheet" href="css/tooplate-style.css">
+  
+
+        <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800" rel="stylesheet">
+
+        <script src="js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <script src="js/jquery-3.2.1.js"></script>
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <script src="js/flip.js"></script>
+        <script type="text/javascript" src="json/network-nodes.json"></script>        
+        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.2.min.js"><\/script>')</script>
+
+        <script src="js/vendor/bootstrap.min.js"></script>
+        
+        <script src="js/datepicker.js"></script>
+        <script src="js/plugins.js"></script>
+        <script src="js/main.js"></script>
+        <script type="text/javascript" src="js/jquery.dropdown.js"></script>
+    
+
+    </head>
+
+<body>
+     <script type="text/javascript">
+  var users = [
+{ name: 'ianpirro' },
+{ name: 'joeschmoe' },
+{ name: 'superdev' }
+]
+
+var loginform = {
+  
+  init: function() {
+    this.bindUserBox();
+  },
+  
+  bindUserBox: function() {
+    var result = {};
+    
+    $(".form").delegate("input[name='un']", 'blur',  function(){
+      var $self = $(this);
+      
+      // this grep would be replaced by $.post tp check db for user
+      result = $.grep(users, function(elem, i){  
+        return (elem.name == $self.val());
+      });
+      
+      // This would be callback
+      if (result.length === 1) {
+        if( $("div.login-wrap").hasClass('register')) {
+          loginform.revertForm();
+          return;
+        }
+        else{
+          return;
+        }
+      }
+      
+      if( !$("div.login-wrap").hasClass('register') ) {
+        if ( $("input[name='un']").val().length > 4 )
+          loginform.switchForm();
+      }
+
+    });
+  },
+  switchForm: function() {
+    var $html = $("div.login-wrap").addClass('register');
+    $html.children('h2').html('Register');
+    $html.find(".form input[name='pw']").after("<input type='password' placeholder='Re-type password' name='rpw' />");
+    $html.find('button').html('Sign up');
+    $html.find('a p').html('Have an account? Sign in');
+  },
+  revertForm: function() {
+    var $html = $("div.login-wrap").removeClass('register');
+    $html.children('h2').html('Login');
+    $html.find(".form input[name='rpw']").remove();
+    $html.find('button').html('Sign in');
+    $html.find('a p').html("Don't have an account? Register");
+  },
+  submitForm: function(){
+    // ajax to handle register or login
+  }
+  
+} // loginform {}
+
+
+// Init login form
+loginform.init();
+
+
+// vertical align box   
+(function(elem){ 
+    elem.css("margin-top", Math.floor( ( $(window).height() / 2 ) - ( elem.height() / 2 ) ) );
+}($(".login-wrap")));
+
+$(window).resize(function(){
+    $(".login-wrap").css("margin-top", Math.floor( ( $(window).height() / 2 ) - ( $(".login-wrap").height() / 2 ) ) );
+  
+});
+    
+
+        </script>
+
+    
+    <section class="banner" id="top" style="height:100%">
+
+        <div class="container" style="height:800px">
+            <div class="row">
+            <div class="logo" style="top:50px;">
+                <img src="img/logo.png" alt="Flight Template">
+            </div>
+            <div class="login-wrap" style="top:50px">
+                    <h2>Login</h2>  
+                    <div class="form">
+                            <input type="text" placeholder="Username" name="un" />
+                            <input type="password" placeholder="Password" name="pw" />
+                            <button onclick='location.href="Titan-index.html"'> Sign in </button>
+                            <a href="#"> <p> Don't have an account? Register </p></a>
+                    </div>
+            </div>
+            </div>
+        </div>
+    </section>
+
+</body>
+</html>

@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <!--
+
+
+-->
+    <title>Titan Explorer</title>
+    <style>
+        i {
+            margin-right: 20px;
+        }
+        
+        .links line {
+            stroke: #999;
+            stroke-opacity: 0.6;
+        }
+        
+        .nodes circle {
+            stroke: #fff;
+            stroke-width: 1.5px;
+        }
+        
+        .not {
+            overflow: hidden;
+            padding: 3em;
+        }
+        
+        .information-note {
+            overflow: hidden;
+            padding: 1em;
+            float: right;
+            text-align: left;
+            font-size: small;
+        }
+        
+        .information-note h3 {
+            font-size: large;
+            color: #1f5cb7;
+        }
+        
+        .information-note li a {
+            text-decoration: none;
+            color: #000;
+            background: white;
+            display: block;
+            height: 10em;
+            width: 42em;
+            padding: 1em;
+            -moz-box-shadow: 5px 5px 7px rgba(255, 255, 255, 1);
+            -webkit-box-shadow: 5px 5px 7px rgba(255, 255, 255, .7);
+            box-shadow: 5px 5px 7px rgba(255, 255, 255, .7);
+        }
+        
+        .information-note li {
+            margin: 1em;
+        }
+        
+        .bubble-wrap.fade-in {
+            @include animation(scaleIn 0.4s ease-in-out);
+            @include transform-origin(0 50% 0);
+        }
+        
+        .bubble-wrap {
+            width: 300px;
+            margin: 20px auto;
+        }
+        
+        .bubble {
+            position: relative;
+            padding: 20px;
+            background: #FFFFFF;
+            border-radius: 4px;
+            border: #7F7F7F solid 1px;
+            font-size: 1em;
+            line-height: 1.25em;
+        }
+        
+        .bubble.left:after {
+            content: '';
+            position: absolute;
+            border-style: solid;
+            border-width: 16px 16px 16px 0;
+            border-color: transparent #FFFFFF;
+            display: block;
+            width: 0;
+            z-index: 1;
+            left: -15px;
+            top: 50%;
+            margin-top: -16px
+        }
+        
+        .bubble.left:before {
+            content: '';
+            position: absolute;
+            border-style: solid;
+            border-width: 16px 16px 16px 0;
+            border-color: transparent #7F7F7F;
+            display: block;
+            width: 0;
+            z-index: 0;
+            left: -16px;
+            top: 50%;
+            margin-top: -16px;
+        }
+        
+        .bubble.right:after {
+            content: '';
+            position: absolute;
+            border-style: solid;
+            border-width: 16px 0 16px 16px;
+            border-color: transparent #FFFFFF;
+            display: block;
+            width: 0;
+            z-index: 1;
+            right: -16px;
+            top: 50%;
+            margin-top: -16px;
+        }
+        
+        .bubble.right:before {
+            content: '';
+            position: absolute;
+            border-style: solid;
+            border-width: 16px 0 16px 16px;
+            border-color: transparent #7F7F7F;
+            display: block;
+            width: 0;
+            z-index: 0;
+            right: -16px;
+            top: 50%;
+            margin-top: -16px;
+        }
+        
+        #button-generate {
+            background-color: #f44336;
+            border: none;
+            color: white;
+            padding: 5px 5px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 12px;
+        }
+        
+        .redbutton {
+            -moz-box-shadow: inset 0px 1px 0px 0px #cf866c;
+            -webkit-box-shadow: inset 0px 1px 0px 0px #cf866c;
+            box-shadow: inset 0px 1px 0px 0px #cf866c;
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #d0451b), color-stop(1, #bc3315));
+            background: -moz-linear-gradient(top, #d0451b 5%, #bc3315 100%);
+            background: -webkit-linear-gradient(top, #d0451b 5%, #bc3315 100%);
+            background: -o-linear-gradient(top, #d0451b 5%, #bc3315 100%);
+            background: -ms-linear-gradient(top, #d0451b 5%, #bc3315 100%);
+            background: linear-gradient(to bottom, #d0451b 5%, #bc3315 100%);
+            filter: progid: DXImageTransform.Microsoft.gradient(startColorstr='#d0451b', endColorstr='#bc3315', GradientType=0);
+            background-color: #d0451b;
+            -moz-border-radius: 3px;
+            -webkit-border-radius: 3px;
+            border-radius: 3px;
+            border: 1px solid #942911;
+            display: inline-block;
+            cursor: pointer;
+            color: #ffffff;
+            font-family: Arial;
+            font-size: 12px;
+            padding: 2px 2px;
+            text-decoration: none;
+            text-shadow: 0px 1px 0px #854629;
+        }
+        
+        .redbutton:hover {
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #bc3315), color-stop(1, #d0451b));
+            background: -moz-linear-gradient(top, #bc3315 5%, #d0451b 100%);
+            background: -webkit-linear-gradient(top, #bc3315 5%, #d0451b 100%);
+            background: -o-linear-gradient(top, #bc3315 5%, #d0451b 100%);
+            background: -ms-linear-gradient(top, #bc3315 5%, #d0451b 100%);
+            background: linear-gradient(to bottom, #bc3315 5%, #d0451b 100%);
+            filter: progid: DXImageTransform.Microsoft.gradient(startColorstr='#bc3315', endColorstr='#d0451b', GradientType=0);
+            background-color: #bc3315;
+        }
+        
+        .redbutton:active {
+            position: relative;
+            top: 1px;
+        }
+        /* mohans css starts from here */
+        
+        h1,
+        .input::-webkit-input-placeholder,
+        button {
+            font-family: 'roboto', sans-serif;
+            -webkit-transition: all 0.3s ease-in-out;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .input {
+            margin: 40px 8px;
+            width: 350px;
+            display: block;
+            border: none;
+            padding: 10px 0;
+            border-bottom: solid 1px #1abc9c;
+            -webkit-transition: all 0.3s cubic-bezier(0.64, 0.09, 0.08, 1);
+            transition: all 0.3s cubic-bezier(0.64, 0.09, 0.08, 1);
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(96%, rgba(255, 255, 255, 0)), color-stop(4%, #1abc9c));
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, #1abc9c 4%);
+            background-position: -350px 0;
+            background-size: 350px 100%;
+            background-repeat: no-repeat;
+            color: #0e6252;
+        }
+        
+        .input:focus,
+        .input:valid {
+            -webkit-box-shadow: none;
+            box-shadow: none;
+            outline: none;
+            background-position: 0 0;
+        }
+        
+        .input:focus::-webkit-input-placeholder,
+        .input:valid::-webkit-input-placeholder {
+            color: #1abc9c;
+            font-size: 11px;
+            -webkit-transform: translateY(-20px);
+            transform: translateY(-18px);
+            visibility: visible !important;
+        }
+        
+        button {
+            border: none;
+            background: #1abc9c;
+            cursor: pointer;
+            border-radius: 3px;
+            padding: 6px;
+            width: 200px;
+            color: white;
+            margin-left: 200px;
+            -webkit-box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.2);
+            box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            -webkit-transform: translateY(-3px);
+            transform: translateY(-3px);
+            -webkit-box-shadow: 0 6px 6px 0 rgba(0, 0, 0, 0.2);
+            box-shadow: 0 6px 6px 0 rgba(0, 0, 0, 0.2);
+        }
+        
+        .follow {
+            width: 42px;
+            height: 42px;
+            border-radius: 50px;
+            background: #03A9F4;
+            display: inline-block;
+            margin: 50px calc(50% - 21px);
+            white-space: nowrap;
+            padding: 13px;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            color: white;
+            -webkit-transition: all 0.2s ease;
+            transition: all 0.2s ease;
+            font-family: Roboto, sans-serif;
+            text-decoration: none;
+            -webkit-box-shadow: 0 5px 6px 0 rgba(0, 0, 0, 0.2);
+            box-shadow: 0 5px 6px 0 rgba(0, 0, 0, 0.2);
+        }
+        
+        .follow i {
+            margin-right: 20px;
+            -webkit-transition: margin-right 0.2s ease;
+            transition: margin-right 0.2s ease;
+        }
+        
+        .follow:hover {
+            width: 134px;
+            -webkit-transform: translateX(-50px);
+            transform: translateX(-50px);
+        }
+        
+        .follow:hover i {
+            margin-right: 10px;
+        }
+        
+        #customers {
+            font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+            border-collapse: collapse;
+            width: 180%;
+        }
+        
+        #customers td,
+        #customers th {
+            border: 1px solid #ddd;
+            padding: 8px 4px;
+        }
+        
+        #customers tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        #customers tr:hover {
+            background-color: #ddd;
+        }
+        
+        #customers th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: center;
+            background-color: #7FB5DA;
+            color: white;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        .list ul {
+            background-color: white;
+            list-style-type: none;
+            padding: 0;
+            width: 125%;
+            height: 245px;
+            overflow: hidden;
+            overflow-y: scroll;
+            border: 1px solid #ddd;
+        }
+        
+        .listy ul {
+            background-color: white;
+            list-style-type: none;
+            padding: 0;
+            width: 125%;
+            height: 600px;
+            overflow: hidden;
+            overflow-y: scroll;
+            border: 1px solid #ddd;
+        }
+        
+        .list ul li a {
+            color: #3498db;
+        }
+        
+        .list ul li,
+        .listy ul li {
+            text-align: left;
+            padding-top: 20px;
+            padding-bottom: 20px;
+            padding-left: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .list ul li:hover {
+            background: rgb(233, 228, 228);
+        }
+        
+        .list ul li:first-child:hover {
+            background: white;
+        }
+        
+        .list ul li:first-child,
+        .listy ul li:first-child {
+            font-size: 1.8em;
+        }
+        
+        .list ul li:last-child,
+        .listy ul li:last-child {
+            border-bottom: none
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 140px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 150%;
+            left: 50%;
+            margin-left: -75px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .list ul li img {
+            margin-right: 10px;
+            border-radius: 50%;
+        }
+    </style>
+
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="css/fontAwesome.css">
+    <link rel="stylesheet" href="css/hero-slider.css">
+    <link rel="stylesheet" href="css/owl-carousel.css">
+    <link rel="stylesheet" href="css/datepicker.css">
+    <link rel="stylesheet" href="css/tooplate-style.css">
+    <link rel="stylesheet" href="css/tabs.css">
+    <link type="text/css" rel="stylesheet" href="css/jquery.dropdown.css" />
+
+
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800" rel="stylesheet">
+
+    <script src="js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="js/jquery-3.2.1.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="js/flip.js"></script>
+    <script type="text/javascript" src="json/network-nodes.json"></script>
+    <script>
+        window.jQuery || document.write('<script src="js/vendor/jquery-1.11.2.min.js"><\/script>')
+    </script>
+
+    <script src="js/vendor/bootstrap.min.js"></script>
+
+    <script src="js/datepicker.js"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/main.js"></script>
+    <script type="text/javascript" src="js/jquery.dropdown.js"></script>
+    <script src="js/dimple.v2.3.0.min.js"></script>
+
+    <script src="web3.js"></script>
+
+
+
+    <link href="css/toastr.min.css" rel="stylesheet" />
+    <script src="js/toastr.min.js"></script>
+
+
+
+    <script>
+        document.addEventListener("touchstart", function() {}, true)
+        web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/MEDIUMTUTORIAL"));
+        var blockno;
+
+        function myFunction() {
+            toastr.options = {
+                "closeButton": false,
+                "debug": false,
+                "newestOnTop": false,
+                "progressBar": false,
+                "positionClass": "toast-top-right",
+                "preventDuplicates": false,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "2000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            }
+            toastr.success('Got Data!');
+
+
+        }
+
+        function startBlock() {
+
+
+            blockno = web3.eth.blockNumber;
+            console.log(blockno);
+            var imgarr = ['img11.png', 'img12.png', 'img13.png', 'img14.png', 'img15.png', 'img16.png', 'img17.png'];
+
+            for (var i = 0; i < 7; i++) {
+
+
+                $('#blocks').append('<li> <img src="img/' + imgarr[i] + '"/>Block <a onclick="getblockInfofromBlockNo(' + (blockno - i) + ')"  href="javascript:void(0);">' + (blockno - i) + '</a></li>');
+
+
+            }
+
+
+            startTxns();
+
+        }
+
+
+        function startTxns() {
+
+            var imgarr = ['img11.png', 'img12.png', 'img13.png', 'img14.png', 'img15.png', 'img16.png', 'img17.png'];
+
+            let promisetoLoadTxns = new Promise(function(resolve, reject) {
+
+                var txnslist = web3.eth.getBlock(blockno).transactions;
+                if (txnslist != null) {
+                    resolve(txnslist);
+                }
+
+
+
+            });
+
+            promisetoLoadTxns.then(function(value) {
+                for (var i = 0; i < 7; i++) {
+                    var a = 0x9b5a0512e5c8b76df7fa3bdbb71e87c178aed998c836c45e3223f934096166bb;
+
+                    $('#txns').append('<li><img src="img/' + imgarr[i] + '"/><a onclick="getTxInfo(' + a + ')"  href="javascript:void(0);">' + (value[i]) + '</a></li>');
+
+
+                }
+
+                console.log(value);
+
+            });
+
+
+
+
+
+
+        }
+
+
+
+        function timeConverter(timestamp) {
+            var d = new Date(timestamp * 1000), // Convert the passed timestamp to milliseconds
+                yyyy = d.getFullYear(),
+                mm = ('0' + (d.getMonth() + 1)).slice(-2), // Months are zero based. Add leading 0.
+                dd = ('0' + d.getDate()).slice(-2), // Add leading 0.
+                hh = d.getHours(),
+                h = hh,
+                min = ('0' + d.getMinutes()).slice(-2), // Add leading 0.
+                ampm = 'AM',
+                time;
+
+            if (hh > 12) {
+                h = hh - 12;
+                ampm = 'PM';
+            } else if (hh === 12) {
+                h = 12;
+                ampm = 'PM';
+            } else if (hh == 0) {
+                h = 12;
+            }
+
+            // ie: 2013-02-18, 8:35 AM 
+            time = yyyy + '-' + mm + '-' + dd + ', ' + h + ':' + min + ' ' + ampm;
+
+            return time;
+        }
+
+
+
+
+
+
+        function toTitleCase(str) {
+            return str.replace(/\w\S*/g, function(txt) {
+                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+            });
+        }
+
+
+
+
+
+
+
+
+
+
+        function getTxInfo(account) {
+
+            var txPromsie = new Promise(function(resolve, reject) {
+
+                var transaction = web3.eth.getTransactionReceipt(account);
+                if (transaction != null) {
+
+                    resolve(transaction);
+
+                } else {
+                    console.log('error ');
+                    reject('could not get tx data');
+
+                }
+
+            });
+
+            txPromsie.then(function(value) {
+
+
+
+
+
+
+
+                $('#txinfo').show();
+                $('#blockinfo').hide();
+                $('#accountinfo').hide();
+                $('#mainscr').hide();
+
+
+
+
+
+                console.log(value);
+
+
+                $('#txlist').append('<li> Transaction #' + account + '</li>');
+                var j = 0;
+                for (var propName in value) {
+                    if (propName != 'logsBloom' && propName != 'logs' && propName != 'contractAddress') {
+                        propValue = value[propName];
+
+                        if (propValue == '0x1') {
+                            propValue = 'success';
+                        }
+
+                        $('#txlist').append('<li>' + toTitleCase(propName) + ' : ' + propValue + '</li>');
+
+                        j++;
+
+                        if (j == 15) {
+                            break;
+                        }
+                    }
+                }
+            }).catch(function(error) {
+
+
+                console.log(error);
+
+                // keep code clean : Freindly developer
+            });
+
+
+        }
+
+
+
+
+        function getaccInfo(account) {
+
+            var balance = web3.fromWei(web3.eth.getBalance(account), 'ether');
+            var txcount = web3.eth.getTransactionCount(account);
+
+
+            $('#accountinfo').show();
+            $('#blockinfo').hide();
+            $('#txinfo').hide();
+            $('#mainscr').hide();
+
+
+            $('#accountlist').append('<li>Account #' + account + '</li>');
+
+            $('#accountlist').append('<li>ETH Balance: ' + balance + ' Ether</li>');
+
+            $('#accountlist').append('<li>ETH USD Value: $' + balance * 1113.84 + '</li>');
+            $('#accountlist').append('<li>No Of Transactions: ' + txcount + ' txns</li>');
+
+
+        }
+
+
+        function getblockInfofromBlockNo(account) {
+
+            var blockPromsie = new Promise(function(resolve, reject) {
+
+                var block = web3.eth.getBlock(account);
+                if (block != null) {
+
+                    resolve(block);
+
+                } else {
+
+                    reject('could not get block data');
+
+                }
+
+            });
+
+            blockPromsie.then(function(value) {
+
+
+                $('#blockinfo').show();
+                $('#accountinfo').hide();
+                $('#txinfo').hide();
+                $('#mainscr').hide();
+
+
+
+
+                $('#blocklist').append('<li> Block #' + account + '</li>');
+
+
+
+                console.log(value);
+                var i = 0;
+                for (var propName in value) {
+                    if (propName != 'logsBloom' && propName != 'difficulty') {
+                        propValue = value[propName]
+
+                        $('#blocklist').append('<li>' + toTitleCase(propName) + ' : ' + propValue + '</li>');
+
+                        i++;
+
+                        if (i == 15) {
+                            break;
+                        }
+                    }
+
+
+
+
+                }
+
+            }).catch(function(error) {
+                // oops, mom don't buy it
+                console.log(error);
+
+
+
+
+
+
+                // output: 'mom is not happy'
+            });
+
+
+        }
+
+
+        function printAccountBalance() {
+
+            var account = document.getElementById('abtx').value;
+
+
+            if (account.length == 66 && account.startsWith("0x")) {
+
+                //it can be transactionhash or block hash for now lets assume its block hash
+                console.log('tx hash detected');
+                getTxInfo(account);
+
+
+            } else if (account.length == 42 && account.startsWith("0x")) {
+
+
+                // it is account hash
+                console.log('account hash detected');
+                getaccInfo(account);
+
+            } else {
+
+                //it is block number
+                console.log('block no detected');
+                getblockInfofromBlockNo(account);
+
+
+            }
+        }
+    </script>
+
+</head>
+
+<body onload="startBlock()">
+    <script type="text/javascript">
+        jQuery(document).ready(function() {
+            $("#bubbles").hide();
+            //$('#bubbles').show();
+
+            $("#tab3-right").hide();
+            $("#tab2-right").hide();
+
+
+            $("#bubbles").flip({
+                trigger: "manual",
+                speed: "200",
+            });
+
+            // navigation click actions 
+            $('.scroll-link').on('click', function(event) {
+                event.preventDefault();
+                var sectionID = $(this).attr("data-id");
+                scrollToID('#' + sectionID, 750);
+            });
+            // scroll to top action
+            $('.scroll-top').on('click', function(event) {
+                event.preventDefault();
+                $('html, body').animate({
+                    scrollTop: 0
+                }, 'slow');
+            });
+            // mobile nav toggle
+            $('#nav-toggle').on('click', function(event) {
+                event.preventDefault();
+                $('#main-nav').toggleClass("open");
+            });
+
+            $("#dropdown-top").on("hide.bs.dropdown", function() {
+                $("#topbtn").html('Configuration <span class="caret"></span>');
+            });
+
+            $("#dropdown-top").on("show.bs.dropdown", function() {
+                $("#topbtn").html('Configuration <span class="caret caret-up"></span>');
+            });
+
+
+
+            jQuery('.tabs .tab-links a').on('click', function(e) {
+                var currentAttrValue = jQuery(this).attr('href');
+
+                // Show/Hide Tabs
+                jQuery('.tabs ' + currentAttrValue).show().siblings().hide();
+                // Change/remove current tab to active
+                jQuery(this).parent('li').addClass('active').siblings().removeClass('active');
+
+
+                // $("#tab1-right").hide();
+                //$("#tab2-right").show();
+                //   $("#tab3-right").hide();
+                $(currentAttrValue + "-right").show();
+
+
+                switch (currentAttrValue) {
+                    case "#tab2":
+                        $("#tab3-right").hide();
+                        $("#tab1-right").hide();
+                        myFunction();
+
+                        break;
+                    case "#tab3":
+                        $("#tab2-right").hide();
+                        $("#tab1-right").hide();
+                        break;
+                    default:
+                        $("#tab2-right").hide();
+                        $("#tab3-right").hide();
+                }
+
+
+
+                console.log(currentAttrValue);
+
+                //$("tab2-right").hide();                
+
+                e.preventDefault();
+            });
+        });
+    </script>
+
+
+    <section class="banner" id="top">
+
+        <div class="container">
+
+
+            <div class="row">
+                <div class="col-md-5">
+
+                    <div class="left-side">
+
+                        <div class="dropdown" id="dropdown-top" style="float: left; top:10px;">
+                            <button class="btn btn-primary dropdown-toggle" id="topbtn" type="button" data-toggle="dropdown">Configuration
+                            <span class="caret"></span></button>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">Account Information</a></li>
+                                <li><a href="#">Preferences</a></li>
+                                <li><a href="#">Logout</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="logo" style="top:50px;">
+                            <img src="img/logo.png" alt="Flight Template">
+                        </div>
+
+                        <div class="tabs" style="padding-top: 100px; padding-right: 30px;">
+                            <ul class="tab-links">
+                                <li class="active"><a href="#tab1">Overview</a></li>
+                                <li><a href="#tab2">Analyzer</a></li>
+                                <li><a href="#tab3">Management</a></li>
+                            </ul>
+
+                            <div class="tab-content">
+                                <div id="tab1" class="tab active">
+                                    <p>
+                                        <h1>My network</h1>
+                                    </p>
+                                    <p> Total Nodes in network: <span id="nodes-count"></span></p>
+                                    <p> Current <span style="color:green;">active</span> nodes: <span id="active-nodes-count">42</span></p>
+                                    <p> Total <span style="color:orange;">storage</span>:3GB</p>
+                                    <p> Total groups in network: <span id="groups-count">11</span></p>
+
+                                    <ol class="rectangle-list" id="group-list">
+
+                                    </ol>
+
+                                </div>
+
+                                <div id="tab2" class="tab">
+
+                                    <h4>The Ethereum Blockchain Explorer</h4><br/>
+
+
+
+                                    <input class="input" id="abtx" placeholder="Tx Hash/Account Hash/Block Number" type="text" size="90" name="account required"><br/>
+
+                                    <button onclick="printAccountBalance()">Submit</button>
+
+                                    <br/> </div>
+
+                                <div id="tab3" class="tab">
+                                    <h1>Network Management</h1>
+                                    <hr>
+                                    <h4>Add a node</h4>
+                                    <p> <a href="#" class="redbutton">Generate e-node ID</a> <input disabled="disabled" />
+                                        <a hreaf=""> <span style="color:red; text-decoration:underline; font-weight:bolder; font-size:13px; cursor:pointer; padding-left:8px">Add Node>></span></a>
+                                    </p>
+                                    <hr>
+                                    <h4>Delete a node</h4>
+                                    <p>To delete a node select a node from the graph on the right and choose "request delete" from the options</p>
+
+                                </div>
+
+                            </div>
+                        </div>
+
+
+
+                        <div class="page-direction-button" id="test" onclick="openbubbles()">
+                            <a><i class="fa fa-phone" style="fill:white"></i>Talk to support</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5 col-md-offset-1">
+
+                    <section id="third-tab-group" class="tabgroup">
+                        <div id="tab3-right" style="left:-100px; position: absolute; top:100px;">
+
+                            <h1 id="right-panel-heading" style="color:white;">Titan Network Graph</h1>
+                            <div id="chartContainer" style="top:200px;position:   absolute; ">
+                                <svg width="690" height="500" id="tab3svg">
+                                      <rect x="10" y="10" height="480" width="670" rx="10" ry="10" style="fill:white;stroke:#BFEFFF;stroke-width:10;opacity:0.7"></rect>
+                            
+                                    </svg>
+
+                                <script type="text/javascript">
+                                    var svg3 = d3.select("#tab3svg");
+                                    d3.tsv("data/example_data.tsv", function(data) {
+                                        var myChart = new dimple.chart(svg3, data);
+                                        myChart.setBounds(95, 25, 575, 435)
+                                        var x = myChart.addCategoryAxis("x", "Availability");
+                                        myChart.addCategoryAxis("y", "Data Share");
+                                        var z = myChart.addMeasureAxis("z", "Storage");
+                                        var s = myChart.addSeries("Availability", dimple.plot.bubble);
+                                        x.addOrderRule("Availability");
+                                        //s.aggregate = dimple.aggregateMethod.max;
+                                        //z.overrideMax = 400;                                          
+                                        //myChart.addLegend(240, 10, 330, 20, "right");
+                                        myChart.draw();
+                                    });
+                                </script>
+                            </div>
+                        </div>
+
+
+                    </section>
+
+                    <section id="second-tab-group" class="tabgroup">
+
+                        <div id="tab2-right" style="left:-100px; position: absolute; top: 100px;">
+
+
+
+
+
+
+                            <div id="blockinfo" style="display:none;">
+
+
+                                <div class="listy" style="width: 100%;">
+                                    <ul id="blocklist">
+
+                                    </ul>
+                                </div>
+
+
+                            </div>
+
+
+
+
+
+
+                            <div id="accountinfo" style="display:none;">
+
+                                <div class="listy" style="width: 100%;">
+                                    <ul id="accountlist">
+
+
+                                    </ul>
+                                </div>
+
+
+                            </div>
+
+
+                            <div id="txinfo" style="display:none;">
+
+
+                                <div class="listy" style="width: 100%;">
+                                    <ul id="txlist">
+
+
+                                    </ul>
+                                </div>
+
+
+                            </div>
+
+
+
+
+
+                            <div id="mainscr">
+                                <h3 style="color:white;padding-bottom:10px;"><i class="fa fa-tachometer"></i>General Dashboard</h3>
+                                <div class="list" style="width: 100%;">
+                                    <ul id="blocks">
+                                        <li> <i class="fa fa-cubes"></i>Blocks</li>
+
+                                    </ul>
+                                </div>
+
+                                <br/>
+                                <br/>
+                                <div class="list" style="width: 100%;">
+                                    <ul id="txns">
+                                        <li> <i class="fa fa-credit-card"></i> Transactions</li>
+
+                                    </ul>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </section>
+
+
+                    <section id="first-tab-group" class="tabgroup">
+
+
+
+                        <div id="tab1-right" style="left:-100px; position: absolute; top: 100px;">
+
+                            <h1 id="right-panel-heading" style="color:white;">Titan Network View</h1>
+
+                            <svg width="400" height="400" id="tab1svg">
+                            
+
+                            </svg>
+
+
+
+                            <script type="text/javascript">
+                                var svg = d3.select("#tab1svg"),
+                                    width = +svg.attr("width"),
+                                    height = +svg.attr("height");
+
+                                var color = d3.scaleOrdinal(d3.schemeCategory20);
+
+
+                                var simulation = d3.forceSimulation()
+                                    .force("link", d3.forceLink().id(function(d) {
+                                        return d.id;
+                                    }))
+                                    .force("charge", d3.forceManyBody().strength(-200))
+                                    .force("center", d3.forceCenter(width / 2, height / 2));
+
+
+
+                                var activenodecount = 0;
+                                var currentgroup = 0;
+                                var groupCountList = {};
+                                var groupActiveCountList = {};
+                                var currentGroupCount = 0;
+                                var currentGroupName;
+                                var groupIDList = {};
+                                var totalactivenodecount = 0;
+                                var node;
+                                var link;
+
+
+                                d3.json("json/network-nodes.json", function(error, graph) {
+                                    if (error) throw error;
+
+                                    link = svg.append("g")
+                                        .attr("class", "links")
+                                        .selectAll("line")
+                                        .data(graph.links)
+                                        .enter().append("line")
+                                        .attr("stroke-width", function(d) {
+                                            return Math.sqrt(d.value);
+                                        });
+
+                                    node = svg.append("g")
+                                        .attr("class", "nodes")
+                                        .selectAll("circle")
+                                        .data(graph.nodes)
+                                        .enter().append("circle")
+                                        .attr("r", 15)
+                                        .attr("fill", function(d) {
+                                            return color(d.group);
+                                        })
+                                        .on("click", click)
+                                        .call(d3.drag()
+                                            .on("start", dragstarted)
+                                            .on("drag", dragged)
+                                            .on("end", dragended));
+
+                                    var groupscount = graph.nodes[graph.nodes.length - 1].group;
+
+
+                                    for (j = 1; j < groupscount + 1; j++) {
+
+                                        currentGroupCount = 0;
+                                        activenodecount = 0;
+
+                                        for (i = 0; i < graph.nodes.length; ++i) {
+
+                                            if (graph.nodes[i].group == j) {
+                                                currentGroupCount++;
+                                                currentGroupName = graph.nodes[i].groupcom;
+                                                if (graph.nodes[i].status == "Active")
+                                                    activenodecount++;
+                                            }
+
+                                        }
+                                        totalactivenodecount = totalactivenodecount + activenodecount;
+
+                                        groupCountList[currentGroupName] = currentGroupCount;
+                                        groupActiveCountList[currentGroupName] = activenodecount;
+                                        groupIDList[j] = currentGroupName;
+
+                                        $("#group-list").append('<li><a href="" onclick="networkinfo(' + j + ')">' + currentGroupName + ' which has ' + currentGroupCount + ' nodes ' + '(' + activenodecount + ') active</a> </li>');
+
+                                    }
+
+
+                                    $("#nodes-count").text(graph.nodes.length);
+                                    $("#active-nodes-count").text(totalactivenodecount);
+                                    $("#groups-count").text(groupscount);
+                                    //$("active-nodes-count").text(graph.nodes.selectAll("Active").length);
+
+                                    node.append("title")
+                                        .text(function(d) {
+                                            return d.id;
+                                        });
+
+                                    simulation
+                                        .nodes(graph.nodes)
+                                        .on("tick", ticked);
+
+
+                                    simulation.force("link")
+                                        .links(graph.links);
+
+
+
+                                    function ticked() {
+                                        link
+                                            .attr("x1", function(d) {
+                                                return d.source.x;
+                                            })
+                                            .attr("y1", function(d) {
+                                                return d.source.y;
+                                            })
+                                            .attr("x2", function(d) {
+                                                return d.target.x;
+                                            })
+                                            .attr("y2", function(d) {
+                                                return d.target.y;
+                                            });
+
+                                        node
+                                            .attr("cx", function(d) {
+                                                return d.x;
+                                            })
+                                            .attr("cy", function(d) {
+                                                return d.y;
+                                            });
+                                    }
+
+
+
+                                });
+
+                                function dragstarted(d) {
+                                    if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+                                    d.fx = d.x;
+                                    d.fy = d.y;
+                                }
+
+                                function dragged(d) {
+                                    d.fx = d3.event.x;
+                                    d.fy = d3.event.y;
+                                }
+
+                                function dragended(d) {
+                                    if (!d3.event.active) simulation.alphaTarget(0);
+                                    d.fx = null;
+                                    d.fy = null;
+                                }
+
+                                function click(d) {
+                                    //$("#bubbles").flip(true);
+                                    $('#node-name').text(d.id);
+                                    $('#node-contact').text(d.contact);
+                                    $('#node-email').text(d.email);
+                                    $('#node-ipaddr').text(d.ip);
+                                    $('#enode-addr').text(d.enode);
+                                    node.style("opacity", "1");
+
+
+
+                                    //$("#bubbles").flip(false);
+
+                                    openbubbles();
+                                    d3.selectAll("circle").attr("r", 15);
+                                    d3.select(this).transition()
+                                        .duration(100)
+                                        .attr("r", 30)
+                                }
+
+                                // scroll function
+                                function scrollToID(id, speed) {
+                                    var offSet = 0;
+                                    var targetOffset = $(id).offset().top - offSet;
+                                    var mainNav = $('#main-nav');
+                                    $('html,body').animate({
+                                        scrollTop: targetOffset
+                                    }, speed);
+                                    if (mainNav.hasClass("open")) {
+                                        mainNav.css("height", "1px").removeClass("in").addClass("collapse");
+                                        mainNav.removeClass("open");
+                                    }
+                                }
+                                if (typeof console === "undefined") {
+                                    console = {
+                                        log: function() {}
+                                    };
+                                }
+
+                                function closebubbles() {
+
+                                    //$("test").flip();
+                                    $("#bubbles").hide();
+                                    $("#bubbles").flip(true);
+                                    node.style("opacity", "1");
+
+                                }
+
+                                function openbubbles() {
+                                    $("#bubbles").show();
+                                    $("#bubbles").flip(false);
+                                }
+
+                                function networkinfo(groupid) {
+                                    $("#bubbles").show();
+                                    $("#bubbles").flip(true);
+                                    $("#group-name").text(groupIDList[groupid]);
+
+
+                                    node.filter(function(d) {
+                                        return d.group != groupid;
+                                    }).style("opacity", "0");
+                                    node.filter(function(d) {
+                                        return d.group == groupid;
+                                    }).style("opacity", "1");
+                                    //  node.filter(function(d) { return d.group==groupid; }).filter("brightness", "200%");
+
+
+                                }
+                            </script>
+
+                            <div id="bubbles" class="flip" style="position: absolute; left: 450px; top: -400px; text-align: left;">
+                                <div class="bubble-wrap front">
+                                    <div class="bubble left" style="height: 450px; width: 300px">
+                                        <a href="#" onclick="closebubbles()"><img src="img/close2.png" width="25" height="25" style="left:250px; position: absolute;"></a>
+                                        <h3>Node Information</h3>
+                                        <p>The current node name is <span style="color:green" id="node-name">ABC Corp X5</span> with contact person <span style="color:orange" id="node-contact"><b>Samite Termite</b></span> <span style="color:orange" id="node-email"> (samite@abc.com) </span>                                            and IP address <span style="color:gray" id="node-ipaddr"> 172.61.15.2. </span></p>
+                                        <p>The e-node address is<span style="color:green" id="enode-addr"><b> 91677664557</b></span></p>
+                                        <p>The node last logged in on <span style="color:green" id="last-node-log"> 11th January 2018 at 1:30PM JST.</span> The node has been active <span style="color:green" id="node-percent-active">98%</span> of the time</p>
+                                        <p><br><br>
+                                            <a href="#" onclick="closebubbles()" style="color: blue; text-decoration: underline; font-size: large;">
+                                            See more details
+                                        </a>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="bubble-wrap back">
+                                    <div class="bubble left" style="height: 450px; width: 300px">
+                                        <a href="#" onclick="closebubbles()"><img src="img/close2.png" width="25" height="25" style="left:250px; position: absolute;"></a>
+
+                                        <h3>Group Information</h3>
+                                        <p>Group name: <span style="color:red" id="group-name">Aeon</span> with group contact person <span style="color:orange" id="group-contact"><b>Samite Termite</b></span> <span style="color:orange" id="group-email"> (samite@abc.com) </span>
+                                            <p>Average group device uptime is<span style="color:green" id="group-uptime"><b> 99.3%</b></span></p>
+                                            <p>Average node participation is <span style="color:orange" id="last-node-log"> 87%</span> </p>
+
+
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+
+
+                    </section>
+                    </div>
+                </div>
+            </div>
+    </section>
+
+</body>
+
+</html>

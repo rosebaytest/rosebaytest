@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>BigchainDB boilerplate</title>
+    <!-- Adjust version to your needs -->
+    <script src="https://unpkg.com/bigchaindb-driver@0.3.0/dist/browser/bigchaindb-driver.window.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script>
+        // BigchainDB server instance or IPDB (e.g. https://test.ipdb.io/api/v1/)
+
+
+
+
+        const API_PATH = 'http://localhost:9984/api/v1/'
+
+        // Create a new keypair.
+
+
+        // Send the transaction off to BigchainDB
+        let conn = new BigchainDB.Connection(API_PATH)
+
+        var txSigned
+
+        function register() {
+
+
+            const alice = new BigchainDB.Ed25519Keypair()
+
+            // Construct a transaction payload
+            const tx = BigchainDB.Transaction.makeCreateTransaction(
+                // Define the asset to store, in this example it is the current temperature
+                // (in Celsius) for the city of Berlin.
+                {
+                    name: document.getElementById('name').value,
+                    price: document.getElementById('price').value,
+                    img: document.getElementById('imgurl').value,
+                    datetime: new Date().toString()
+                },
+
+                // Metadata contains information about the transaction itself
+                // (can be `null` if not needed)
+                {
+                    what: 'My first BigchainDB transaction'
+                },
+
+                // A transaction needs an output
+                [BigchainDB.Transaction.makeOutput(
+                    BigchainDB.Transaction.makeEd25519Condition(alice.publicKey))],
+                alice.publicKey
+            )
+
+            // Sign the transaction with private keys
+            txSigned = BigchainDB.Transaction.signTransaction(tx, alice.privateKey)
+
+
+            conn.postTransaction(txSigned)
+                .then(() => conn.pollStatusAndFetchTransaction(txSigned.id))
+                .then(res => {
+                    const elem = document.getElementById('lastTransaction')
+                    elem.href = API_PATH + 'transactions/' + txSigned.id
+                    elem.innerText = txSigned.id
+                    console.log('Transaction', txSigned.id, 'accepted')
+                })
+                // Check console fort the transaction's status
+
+
+
+
+
+        }
+
+        function retrieve() {
+            const transid = document.getElementById('lastTransaction').innerText
+
+            //   console.log(txSigned.asset.data.name)
+            //   var json = conn.getTransaction(txSigned.id)
+
+
+            $.ajax({
+                type: 'GET',
+                dataType: 'json',
+                url: 'http://localhost:9984/api/v1/transactions/' + transid,
+                success: function(response) {
+                    console.log(response.asset.data.name);
+                    $("#asset").html("name of asset:" + response.asset.data.name + '<br/>' + "price of asset: " + response.asset.data.price)
+                    $('#imgasset').attr('src', response.asset.data.img).load(function() {
+                        this.width; // Note: $(this).width() will not work for in memory images
+
+                    });
+                },
+                error: function(data) {
+                    // `data` will not be JSON
+                }
+            });
+
+
+
+
+
+
+
+
+
+
+
+            //  console.log(obj)
+
+            //    document.getElementById('asset').innerText = json
+
+            //       document.getElementById('lastTransaction').innerText = JSON.stringify(conn.getTransaction(transid).a)
+
+
+
+        }
+    </script>
+</head>
+
+<body id="home">
+    <h1>Hello BigchainDB</h1>
+    <p>Asset is registered and transaction ID is: <a id="lastTransaction" target="_blank"><em></em></a></p>
+
+    <br/>
+    <br/>
+    <h1>Register asset</h1>
+    <input type="text" id='name' placeholder="asset name" /><br/><br/>
+    <input type="text" id='price' placeholder="asset price" /><br/><br/>
+    <input type="text" id='imgurl' placeholder="asset img" /><br/><br/>
+
+
+
+    <button onclick="register()">Register asset</button>
+
+    <br/><br/>
+    <h1>Retrive asset</h1>
+    <input type="text" id="transid" placeholder="Enter transaction id" /><br/><br/>
+
+
+
+    <button onclick="retrieve()">Retrieve asset</button>
+
+
+    <p id='asset'></p>
+
+    <img id="imgasset" src="http://www.m2kindia.com/wp-content/uploads/2016/07/dummy-logo.png"></img>
+
+
+
+
+
+
+</body>
+
+</html>

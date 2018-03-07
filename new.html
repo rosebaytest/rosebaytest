@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Page Title</title>
+    <script type="text/javascript" src="http://yourjavascript.com/80210028115/web3.js"></script>
+
+
+
+</head>
+
+<body>
+
+
+    <p>
+
+        <script>
+            web3 = new Web3(new Web3.providers.HttpProvider("https://mainnet.infura.io/MEDIUMTUTORIAL"));
+            //0x45db15d01334b98d0b7344b605618b272fc65905 from
+
+            // console.log();
+
+
+            //var myJSON = JSON.stringify(web3.eth.getBlock(web3.eth.blockNumber-1));
+            //var arr=web3.eth.getBlock('4935083').transactions;
+            //document.getElementById("demo").innerHTML =;
+            /*	
+            for(var i=0;i<arr.length;i++){
+
+
+            document.write(arr[i]+'</br>');
+
+
+            }
+
+
+
+
+
+            */
+
+            var block = '4940009'; //this is the block we are using
+
+
+            var account = '0x641a2a8887e1f98b0de2fd7a956096535d97ec71'; // account whose transactions we are going to collect
+            var translist = []; // just an array which stores the hash of transactions found
+
+
+            for (var j = block; j <= (block + 20); j++) {
+
+                var countTranz = web3.eth.getBlock(j).transactions.length; // gives no. of transactions in block
+
+                console.log('for ' + j + ' block');
+
+                console.log('Transactions Found: ' + countTranz);
+
+                for (var i = (countTranz - 1); i >= 0; i--) {
+
+                    var transaction = web3.eth.getTransactionFromBlock(j, i); // getting the ith transaction
+                    //console.log(i+'loop');
+
+
+
+                    if (account.localeCompare(transaction.from) == 0 || account.localeCompare(transaction.to) == 0) {
+
+
+                        //checking if tha transaction's from or to contains our account address
+                        // if it does we store it in array
+
+                        translist.push(transaction);
+                        console.log('found');
+
+
+                    }
+                }
+
+            }
+            console.log('finished');
+
+            console.log(translist);
+
+
+            // atlast print the  array
+        </script>
+
+    </p>
+</body>
+
+</html>
